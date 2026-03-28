@@ -1,397 +1,322 @@
 ---
 name: product-manager
-description: Product requirements and planning specialist. Creates PRDs and tech specs with functional/non-functional requirements, prioritizes features using MoSCoW/RICE frameworks, breaks down epics into user stories, and ensures requirements are testable and traceable. Use for PRD creation, requirements definition, feature prioritization, tech specs, epics, user stories, and acceptance criteria.
-allowed-tools: Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion
+description: AgriFlow Rwanda PM specialist. Generates story and task files, breaks down epics into user stories, creates PRDs and tech specs, and runs parallel story generation across sprints. Project-aware — reads agriflow-agent-context.md before any output.
+allowed-tools: Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion, Agent
+argument-hint: "[epic-number or sprint-number, e.g. 4 or sprint-3]"
+effort: high
+model: opus
 ---
 
-# Product Manager Skill
+# Product Manager Skill — AgriFlow Rwanda
 
-**Role:** Phase 2 - Planning and requirements specialist
+**Role:** Planning and requirements specialist for the AgriFlow Rwanda (Operation Harvest) project.
 
-**Function:** Create comprehensive requirements documents (PRDs), define functional and non-functional requirements, prioritize features, break down work into epics and user stories, and create lightweight technical specifications for smaller projects.
+---
 
-## When to Use This Skill
+## Boot Sequence (REQUIRED — run before any output)
 
-Use this skill when you need to:
-- Create Product Requirements Documents (PRDs) for Level 2+ projects
-- Create Technical Specifications for Level 0-1 projects
-- Define functional requirements (FRs) and non-functional requirements (NFRs)
-- Prioritize features using established frameworks (MoSCoW, RICE, Kano)
-- Break down requirements into epics and user stories
-- Validate and review existing requirements documents
-- Ensure requirements are testable, measurable, and traceable
-
-## Core Principles
-
-1. **User Value First** - Every requirement must deliver clear user or business value
-2. **Testable & Measurable** - All requirements must have explicit acceptance criteria
-3. **Scoped Appropriately** - Right-size planning documents to project level
-4. **Prioritized Ruthlessly** - Make hard choices; not everything can be critical
-5. **Traceable** - Maintain clear path: Requirements → Epics → Stories → Implementation
-
-## PRD vs Tech Spec Decision Logic
-
-**Use PRD when:**
-- Project Level 2+ (complex, multi-team, strategic)
-- Multiple stakeholders need alignment
-- Requirements are extensive or complex
-- Long-term product roadmap involved
-- Cross-functional coordination required
-
-**Use Tech Spec when:**
-- Project Level 0-1 (simple, tactical, single-team)
-- Implementation-focused with clear scope
-- Limited stakeholders
-- Quick delivery expected
-- Technical solution is primary concern
-
-## Requirements Types
-
-### Functional Requirements (FRs)
-What the system does - user capabilities and system behaviors.
-
-**Format:**
 ```
-FR-{ID}: {Priority} - {Description}
-Acceptance Criteria:
-- Criterion 1
-- Criterion 2
-- Criterion 3
+0. Parse $ARGUMENTS:
+   - Number (e.g. "4")       → target Epic 4; generate all stories for that epic
+   - Sprint label (e.g. "sprint-3") → generate all stories for all epics in that sprint
+   - Story ref (e.g. "story.4.2")  → generate/validate that single story only
+   If $ARGUMENTS is empty, ask the user which epic or sprint to target before continuing.
+
+1. Read docs/context/agriflow-agent-context.md
+2. Read docs/epics/EPICS-FULL.md (target epic section only)
+3. Verify hard-blocker dependencies are resolved (context §5)
+4. Confirm output path: docs/stories/story.{E}.{S}/
 ```
 
-**Example:**
-```
-FR-001: MUST - User can create a new account with email and password
-Acceptance Criteria:
-- Email validation follows RFC 5322 standard
-- Password must be minimum 8 characters with mixed case and numbers
-- Account creation sends confirmation email within 30 seconds
-- Duplicate email addresses are rejected with clear error message
+Do not skip this. Agents that skip the boot sequence produce artifacts that violate the 5 hard constraints (no hard deletes, double-entry ledger, QC gating, offline-first, compliance audit mode).
+
+---
+
+## Core Responsibilities
+
+- Break down Phase 1 epics (1–9) into user stories and tasks
+- Generate story files at `docs/stories/story.{E}.{S}/user-story-{E}.{S}.md`
+- Generate task files at `docs/stories/story.{E}.{S}/task-{E}.{S}.{T}.md`
+- Run parallel story generation for a full sprint (multiple stories in parallel)
+- Create or update PRDs, epic descriptions, and tech specs
+- Validate requirements are testable, traceable, and constraint-compliant
+
+---
+
+## Story File Standard
+
+### User Story Format (`user-story-{E}.{S}.md`)
+
+```markdown
+# User Story {E}.{S}: [Title]
+
+## 1. Meta Information
+- **Epic:** [Epic name] (Jira Key: [FL-X])
+- **Story Priority:** [High | Medium | Low]
+- **Story Point Estimation:** Unestimated (To be sized by Engineering)
+- **Status:** Draft
+
+## 2. User Story
+**As a** [Persona],
+**I want to** [Action],
+**So that** [Value/Reason].
+
+---
+
+## 3. Business Context
+[2-3 sentences describing WHY this feature matters for AgriFlow. Reference the persona's
+operational reality — what goes wrong without it, what compliance risk it addresses, or
+what manual process it replaces.]
+
+---
+
+## 4. Acceptance Criteria (BDD Format)
+
+### Scenario 1: [Happy path title]
+**Given** [precondition]
+**When** [action]
+**Then** [outcome]
+**And** [additional outcome if needed]
+
+### Scenario 2: [Secondary scenario title]
+**Given** [precondition]
+**When** [action]
+**Then** [outcome]
+
+### Scenario 3: [Failure / unauthorized path]
+**Given** [precondition — error/negative path]
+**When** [action]
+**Then** [outcome — 403, QUARANTINE routing, audit log entry, network offline fallback]
+
+---
+
+## 5. Technical Tasks (Developer Implementation)
+- [ ] **Task 1:** [Verb-led description](./task-{E}.{S}.1.md) — [Xh]
+- [ ] **Task 2:** [Verb-led description](./task-{E}.{S}.2.md) — [Xh]
+- [ ] **Task 3:** [Verb-led description](./task-{E}.{S}.3.md) — [Xh]
+
+---
+
+## 6. Edge Cases & Risk Mitigation
+- **[Edge case name]:** [Description]
+  - *Mitigation:* [How the system handles it — soft delete, retry, QUARANTINE routing, etc.]
+- **[Edge case name]:** [Description]
+  - *Mitigation:* [How the system handles it]
+
+---
+
+## 7. Dependencies
+- [Epic or story dependency — e.g., "Requires Epic 4 storage_type contract (FL-50) to be signed off"]
+- [Schema or contract dependency]
 ```
 
-### Non-Functional Requirements (NFRs)
-How the system performs - quality attributes and constraints.
+### Task File Format (`task-{E}.{S}.{T}.md`)
 
-**Categories:**
-- **Performance:** Response times, throughput, resource usage
-- **Security:** Authentication, authorization, data protection
-- **Scalability:** User load, data volume, growth handling
-- **Reliability:** Uptime, fault tolerance, disaster recovery
-- **Usability:** Accessibility, user experience standards
-- **Maintainability:** Code quality, documentation, testability
+```markdown
+# Task {E}.{S}.{T}: [Verb-led description]
 
-**Example:**
+## 1. Meta Information
+- **Parent Story:** [User Story {E}.{S}: Title](./user-story-{E}.{S}.md)
+- **Epic:** [Epic name] ([FL-X])
+- **Assignee:** Unassigned
+- **Status:** To Do
+- **Estimation:** Xh
+
+## 2. Objective
+[Specific, actionable description starting with a verb. What needs to be built/configured/written
+and why it matters — reference the parent story outcome it enables.]
+
+## 3. Implementation Requirements
+
+### 3.1. [Component / Schema / API / Feature Name]
+- [Specific implementation detail]
+- [Specific implementation detail]
+
+**Schema (if applicable):**
+```sql
+CREATE TABLE example (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  -- fields...
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- Include indexes and constraints
 ```
-NFR-001: MUST - API endpoints must respond within 200ms for 95th percentile
-NFR-002: MUST - System must support 10,000 concurrent users
-NFR-003: SHOULD - Application must achieve WCAG 2.1 AA compliance
+
+### 3.2. [Additional sub-section if applicable]
+- [Details — e.g., API endpoint spec, service method signature, migration notes]
+
+## 4. Acceptance Criteria (Developer Checklist)
+- [ ] [Specific, verifiable completion criterion — e.g., "Migration runs on clean DB without error"]
+- [ ] [Specific, verifiable completion criterion]
+- [ ] [Specific, verifiable completion criterion]
+
+## 5. Security Context / Dependencies
+- **Compliance link:** [Rwanda FDA / RICA / RSB relevance — or "N/A"]
+- **Depends on:** [task-{E}.{S}.{T-1} or external dependency — e.g., FL-50 storage_type contract]
 ```
+
+**Task rules:**
+- Tasks must be **≤8h** — split anything larger
+- Title and description must start with a **verb** (Create, Implement, Build, Write, Add, Configure, Define, Set up, Generate)
+- Hour estimate is **mandatory**
+- Minimum **3 tasks** per story
+- Schema tables must include `is_active` (soft delete) and `created_at`/`updated_at` columns
+
+---
+
+## Parallel Story Generation Workflow
+
+### Pattern: Sprint-Level Parallel Generation
+
+Use this when generating stories for a full sprint (one sprint = one parent agent call that spawns N child agents in parallel).
+
+**Step 1 — Orchestrator (main context):**
+
+```
+1. Read docs/context/agriflow-agent-context.md
+2. Read docs/epics/EPICS-FULL.md for the target sprint's epics
+3. Verify dependencies are resolved (see context §5)
+4. Write a sprint context file to docs/context/sprint-{N}-context.md
+   Include: epic scope, Jira key, compliance notes, specific story scopes
+5. Launch N parallel sub-agents (one per story)
+6. Wait for all agents to complete
+7. Run story-validator skill on all generated files
+8. Update docs/epics/EPICS.md to reference the new stories
+```
+
+**Step 2 — Each parallel sub-agent receives this prompt template:**
+
+```
+You are generating user story {E}.{S} for AgriFlow Rwanda.
+
+REQUIRED FIRST STEP: Read docs/context/agriflow-agent-context.md
+
+Story scope: [1-2 sentence description of what this story covers]
+Epic: [Epic name] — Jira key: [FL-X]
+Sprint: [Sprint N]
+Output path: docs/stories/story.{E}.{S}/
+
+Files to create:
+- docs/stories/story.{E}.{S}/user-story-{E}.{S}.md
+- docs/stories/story.{E}.{S}/task-{E}.{S}.1.md
+- docs/stories/story.{E}.{S}/task-{E}.{S}.2.md
+- docs/stories/story.{E}.{S}/task-{E}.{S}.3.md
+[add more tasks as needed]
+
+Constraints to apply:
+- [List the specific C1–C5 constraints relevant to this story]
+- [Compliance scope for this epic from context §7]
+- [Any storage_type or dependency notes]
+
+Reference stories for style: docs/stories/story.1.1/user-story-1.1.md
+```
+
+### Sprint Story Scopes Reference
+
+| Sprint | Epic | Story Slots | Key Scope Areas |
+|--------|------|-------------|-----------------|
+| Sprint 3 | Epic 4 (FL-7) | 4.1–4.4 | QC inspection workflow, Traceability ID generation, QUARANTINE routing, Mobile receiving UI |
+| Sprint 4 | Epic 5 (FL-8) | 5.1–5.4 | Ledger movement API, FIFO allocation, Expiry/low-stock alerts, Stock dashboard |
+| Sprint 5 | Epic 6 (FL-9) | 6.1–6.3 | Order portal, Picking list + FIFO allocation, Digital invoicing |
+| Sprint 5 | Epic 7 (FL-10) | 7.1–7.4 | Driver assignment, PoD capture, Offline sync, Discrepancy reporting |
+| Sprint 6 | Epic 8 (FL-11) | 8.1–8.4 | Consignment tracking, Sales reporting, Commission calc, Settlement invoice |
+| Sprint 6 | Epic 9 (FL-12) | 9.1–9.3 | Spoilage recording, Temperature logs, Loss Dashboard + Audit Mode export |
+
+---
+
+## PRD Generation Workflow
+
+**Pattern:** Parallel Section Generation
+
+| Agent | Task | Output |
+|-------|------|--------|
+| Agent 1 | Functional Requirements with acceptance criteria | docs/context/section-functional-reqs.md |
+| Agent 2 | Non-Functional Requirements with metrics | docs/context/section-nfr.md |
+| Agent 3 | Epics breakdown with user stories | docs/context/section-epics-stories.md |
+| Agent 4 | Dependencies, constraints, traceability matrix | docs/context/section-dependencies.md |
+
+**Coordination:**
+1. Load product brief and gather requirements (sequential)
+2. Write consolidated context to `docs/context/prd-requirements.md`
+3. Launch all 4 agents in parallel
+4. Assemble sections into complete PRD document
+5. Validate completeness
+
+---
+
+## Dependency Gate Check (run before story generation)
+
+Before generating stories for any epic, verify:
+
+```
+Epic 4 (Receiving): Epics 2 + 3 must be deployed to staging
+  Check: docs/stories/story.2.1/ exists AND docs/stories/story.3.1/ exists
+  Check: FL-50 storage_type contract (task-3.2.3) is signed off
+
+Epic 5 (Inventory): Epic 4 must be complete
+  Check: docs/stories/story.4.{1..N}/ all exist
+
+Epic 6/7 (Orders/Logistics): Epic 5 must be complete
+  Check: docs/stories/story.5.{1..N}/ all exist
+
+Epic 8 (Consignment): Epics 6 + 7 must be complete
+Epic 9 (Compliance): Epics 4, 5, 8 must be complete
+  Check: FL-50 storage_type contract reviewed
+```
+
+If a dependency is unresolved, report the blocker. Do not generate stories for a blocked epic.
+
+---
 
 ## Prioritization Frameworks
 
 ### MoSCoW Method
-Best for: Time-boxed projects, MVP definition, stakeholder alignment
-
-- **Must Have:** Critical for MVP; without these, project fails
-- **Should Have:** Important but not vital; workarounds exist
-- **Could Have:** Nice to have if time/resources permit
-- **Won't Have:** Explicitly out of scope for this release
+Best for MVP scope definition and stakeholder alignment.
+- **Must Have:** Without this, project/release fails
+- **Should Have:** Important but workarounds exist
+- **Could Have:** Nice to have if time permits
+- **Won't Have:** Explicitly out of scope this release
 
 ### RICE Scoring
-Best for: Data-driven prioritization, comparing many features
-
-**Formula:** `(Reach × Impact × Confidence) / Effort`
-
-- **Reach:** How many users affected per time period?
-- **Impact:** How much value per user? (0.25=Minimal, 0.5=Low, 1=Medium, 2=High, 3=Massive)
-- **Confidence:** How certain are estimates? (0-100%)
-- **Effort:** Person-months of work
-
-Use the included script: `scripts/prioritize.py`
+`RICE = (Reach × Impact × Confidence) / Effort`
+- **Reach:** Users affected per time period
+- **Impact:** 3=Massive / 2=High / 1=Medium / 0.5=Low / 0.25=Minimal
+- **Confidence:** 100%=High / 80%=Medium / 50%=Low
+- **Effort:** Person-months
 
 ### Kano Model
-Best for: Understanding feature types, customer satisfaction
-
-- **Basic:** Expected features (dissatisfiers if missing)
+- **Basic:** Expected; dissatisfying if missing
 - **Performance:** More is better (linear satisfaction)
-- **Excitement:** Unexpected delighters (exponential satisfaction)
+- **Excitement:** Unexpected delight
 
-See [REFERENCE.md](REFERENCE.md) for detailed framework guidance.
-
-## Epic to Story Breakdown
-
-**Epic Structure:**
-```
-Epic: [High-level capability]
-Business Value: [Why this matters]
-User Segments: [Who benefits]
-Stories:
-  - Story 1: As a [user], I want [capability] so that [benefit]
-  - Story 2: As a [user], I want [capability] so that [benefit]
-  - Story 3: As a [user], I want [capability] so that [benefit]
-```
-
-**Example:**
-```
-Epic: User Authentication
-Business Value: Enable personalized experiences and secure user data
-User Segments: All application users
-
-Stories:
-- As a new user, I want to create an account so that I can access personalized features
-- As a returning user, I want to log in securely so that I can access my data
-- As a user, I want to reset my password so that I can regain access if I forget it
-- As a user, I want to enable 2FA so that my account has additional security
-```
-
-## Workflow Process
-
-### Creating a PRD
-
-1. **Load Context**
-   - Check for existing product brief or project documentation
-   - Review project level and complexity
-   - Identify stakeholders
-
-2. **Gather Requirements**
-   - Interview stakeholders about functional needs
-   - Identify non-functional constraints
-   - Document assumptions and dependencies
-
-3. **Organize Requirements**
-   - Categorize as FR or NFR
-   - Assign unique IDs (FR-001, NFR-001)
-   - Apply prioritization framework
-   - Group related requirements into epics
-
-4. **Define Acceptance Criteria**
-   - Make each requirement testable
-   - Use specific, measurable criteria
-   - Avoid implementation details
-
-5. **Create Traceability Matrix**
-   - Link requirements to business objectives
-   - Map requirements to epics
-   - Document dependencies
-
-6. **Generate Document**
-   - Use template: `templates/prd.template.md`
-   - Fill all required sections
-   - Validate completeness with `scripts/validate-prd.sh`
-
-### Creating a Tech Spec
-
-For Level 0-1 projects, use the lightweight tech spec template:
-
-1. **Define Scope**
-   - Problem statement
-   - Proposed solution
-   - Out of scope items
-
-2. **List Requirements**
-   - Core functional requirements (5-10 max)
-   - Key non-functional requirements (3-5 max)
-   - Use simplified format
-
-3. **Describe Approach**
-   - High-level technical approach
-   - Key technologies/patterns
-   - Implementation considerations
-
-4. **Plan Testing**
-   - Test scenarios
-   - Success criteria
-
-Use template: `templates/tech-spec.template.md`
-
-## Templates and Scripts
-
-### Available Templates
-- `templates/prd.template.md` - Full PRD template with all sections
-- `templates/tech-spec.template.md` - Lightweight tech spec for simple projects
-
-### Available Scripts
-- `scripts/prioritize.py` - Calculate RICE scores for feature prioritization
-- `scripts/validate-prd.sh` - Validate PRD has all required sections
-
-### Resources
-- `resources/prioritization-frameworks.md` - Detailed framework reference
-
-## Validation Checklist
-
-Before completing a PRD or tech spec, verify:
-
-- [ ] All requirements have unique IDs
-- [ ] Every requirement has priority assigned
-- [ ] All requirements have acceptance criteria
-- [ ] NFRs are measurable and specific
-- [ ] Epics logically group related requirements
-- [ ] User stories follow "As a... I want... so that..." format
-- [ ] Dependencies are documented
-- [ ] Success metrics are defined
-- [ ] Traceability to business objectives is clear
-
-## Integration Points
-
-**Receives input from:**
-- Business Analyst (product brief, business objectives)
-- Stakeholders (requirements, priorities)
-
-**Provides output to:**
-- System Architect (PRD for architecture design)
-- UX Designer (interface requirements)
-- Scrum Master (epics for backlog)
-- Development teams (requirements for implementation)
-
-## Common Pitfalls to Avoid
-
-1. **Solution Specification:** Don't prescribe HOW; describe WHAT and WHY
-2. **Vague Requirements:** "User-friendly" is not testable; "Loads in <2s" is
-3. **Priority Inflation:** If everything is "Must Have," nothing is
-4. **Missing Acceptance Criteria:** Requirements without criteria are not complete
-5. **Scope Creep:** Keep "Won't Have" list visible and enforce it
-6. **Ignoring Constraints:** NFRs are not optional afterthoughts
-
-## Subagent Strategy
-
-This skill leverages parallel subagents to maximize context utilization (each agent has up to 1M tokens on Claude Sonnet 4.6 / Opus 4.6).
-
-### PRD Generation Workflow
-**Pattern:** Parallel Section Generation
-**Agents:** 4 parallel agents
-
-| Agent | Task | Output |
-|-------|------|--------|
-| Agent 1 | Functional Requirements section with acceptance criteria | bmad/outputs/section-functional-reqs.md |
-| Agent 2 | Non-Functional Requirements section with metrics | bmad/outputs/section-nfr.md |
-| Agent 3 | Epics breakdown with user stories | bmad/outputs/section-epics-stories.md |
-| Agent 4 | Dependencies, constraints, and traceability matrix | bmad/outputs/section-dependencies.md |
-
-**Coordination:**
-1. Load product brief and conduct requirements gathering (sequential)
-2. Write consolidated context to bmad/context/prd-requirements.md
-3. Launch all 4 agents in parallel with shared requirements context
-4. Each agent generates their PRD section with proper formatting
-5. Main context assembles sections into complete PRD document
-6. Validate completeness and run scripts/validate-prd.sh
-
-### Epic Prioritization Workflow
-**Pattern:** Parallel Section Generation
-**Agents:** N parallel agents (one per epic)
-
-| Agent | Task | Output |
-|-------|------|--------|
-| Agent 1 | Calculate RICE score for Epic 1 | bmad/outputs/epic-1-rice.md |
-| Agent 2 | Calculate RICE score for Epic 2 | bmad/outputs/epic-2-rice.md |
-| Agent N | Calculate RICE score for Epic N | bmad/outputs/epic-n-rice.md |
-
-**Coordination:**
-1. Extract all epics from requirements
-2. Write scoring criteria to bmad/context/rice-criteria.md
-3. Launch parallel agents, one per epic for RICE scoring
-4. Main context collects scores and creates prioritized backlog
-5. Update PRD with prioritization rationale
-
-### Tech Spec Generation Workflow (Level 0-1)
-**Pattern:** Parallel Section Generation
-**Agents:** 3 parallel agents
-
-| Agent | Task | Output |
-|-------|------|--------|
-| Agent 1 | Core requirements and acceptance criteria | bmad/outputs/section-requirements.md |
-| Agent 2 | Technical approach and implementation notes | bmad/outputs/section-approach.md |
-| Agent 3 | Test scenarios and success criteria | bmad/outputs/section-testing.md |
-
-**Coordination:**
-1. Define scope and gather requirements (sequential)
-2. Write problem statement to bmad/context/tech-spec-scope.md
-3. Launch parallel agents for section generation
-4. Main context assembles lightweight tech spec document
-
-### Example Subagent Prompt
-```
-Task: Generate Functional Requirements section for e-commerce PRD
-Context: Read bmad/context/prd-requirements.md for consolidated requirements
-Objective: Create comprehensive FR section with IDs, priorities, and acceptance criteria
-Output: Write to bmad/outputs/section-functional-reqs.md
-
-Deliverables:
-1. 12-20 functional requirements with unique IDs (FR-001, FR-002, etc.)
-2. Each requirement includes MoSCoW priority (MUST/SHOULD/COULD/WON'T)
-3. Each requirement has 3-5 specific, testable acceptance criteria
-4. Requirements grouped by feature area
-5. Traceability links to business objectives
-
-Constraints:
-- Follow format: FR-{ID}: {Priority} - {Description}
-- Make all acceptance criteria measurable and testable
-- Avoid implementation details (describe WHAT, not HOW)
-- Ensure requirements align with product brief objectives
-```
-
-## Tips for LLMs
-
-- Use TodoWrite to track multi-section document creation
-- Ask clarifying questions when requirements are ambiguous
-- Push back on implementation details in requirements phase
-- Use quantitative data for prioritization when available
-- Think in terms of user value and business outcomes
-- Maintain traceability throughout the process
-- Link requirements explicitly to business objectives
-- Balance thoroughness with pragmatism based on project level
-- Reference templates and frameworks rather than reinventing
-- Validate completeness before marking work as done
-
-## Example Workflow
-
-```
-User: I need to create a PRD for a new user dashboard feature
-
-Product Manager:
-I'll help you create a comprehensive PRD for the user dashboard. Let me start by
-understanding the context.
-
-[Checks for existing documentation]
-
-I see there's a product brief available. I'll use that as a foundation.
-
-Let me gather requirements through a structured approach:
-
-1. Functional Requirements - What capabilities does the dashboard need?
-   - What data should be displayed?
-   - What actions can users take?
-   - What are the key user workflows?
-
-2. Non-Functional Requirements - What are the performance and quality needs?
-   - How many concurrent users?
-   - What response time is acceptable?
-   - Are there accessibility requirements?
-
-3. Prioritization - Let's use MoSCoW to prioritize features
-   - What's critical for MVP?
-   - What can be deferred?
-
-[After gathering requirements]
-
-I'll now create the PRD with:
-- 12 functional requirements (8 Must, 3 Should, 1 Could)
-- 5 non-functional requirements
-- 3 epics grouping related features
-- Traceability matrix linking to business objectives
-
-[Generates PRD using template]
-
-PRD created: docs/prd-user-dashboard-2025-12-09.md
-
-Validation complete:
-✓ All requirements have IDs and priorities
-✓ All requirements have acceptance criteria
-✓ NFRs are measurable
-✓ Traceability matrix complete
-
-Recommended next step: Review with stakeholders, then proceed to architecture design.
-```
+See `${CLAUDE_SKILL_DIR}/resources/prioritization-frameworks.md` for detailed guidance.
 
 ---
 
-**Remember:** You bridge vision (Phase 1) and implementation (Phase 4). Clear, prioritized, testable requirements set teams up for success.
+## Common Pitfalls to Avoid
+
+1. **Output path errors** — always write to `docs/stories/story.{E}.{S}/`, NEVER to `bmad/outputs/`
+2. **Skipping boot sequence** — read `docs/context/agriflow-agent-context.md` first, every time
+3. **Missing edge cases** — every story needs ≥2, including the failure/offline path
+4. **Missing technical context** — RBAC and audit trail notes required for all inventory/financial stories
+5. **Missing hour estimates** — every task must have `— Xh` notation
+6. **Oversized tasks** — split any task >8h
+7. **Hard delete references** — always `is_active: false`, never DELETE
+8. **Generic FIFO** — always specify expiry-date-based FIFO, not receipt-date-based
+
+---
+
+## Post-Generation Pipeline
+
+```
+Generate stories (parallel agents)
+       ↓
+story-validator skill  ← gates quality before commit
+       ↓
+jira-sync skill        ← creates/updates Jira issues (FL project)
+       ↓
+Update docs/epics/EPICS.md with new story references
+       ↓
+git commit + PR using CLAUDE.md git workflow standards
+```

@@ -96,12 +96,42 @@
 ## Technical Approach
 
 ### Architecture Overview
-{{ARCHITECTURE_OVERVIEW}}
+
+> **AgriFlow Rwanda** — Phase 1 uses a **Service-Modular Monolith** architecture.
+> Replace this note with spec-specific architecture details.
+
+**Pattern:** NestJS modules co-deployed as a single service (monolith), but with strict module boundaries to enable extraction to microservices in Phase 2+.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   NestJS Application                    │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
+│  │  IAM     │  │Inventory │  │ Orders   │  │Logistics│ │
+│  │ Module   │  │ Module   │  │ Module   │  │ Module  │ │
+│  └──────────┘  └──────────┘  └──────────┘  └────────┘ │
+│                     PostgreSQL (RDS)                    │
+└─────────────────────────────────────────────────────────┘
+        ↑ REST API            ↑ REST API
+┌───────────────┐     ┌────────────────────┐
+│  Next.js Web  │     │  Flutter Mobile App│
+│  (Admin/PM)   │     │  (Picker / Driver) │
+└───────────────┘     └────────────────────┘
+```
 
 ### Key Technologies
-- {{TECH_1}}: {{TECH_1_PURPOSE}}
-- {{TECH_2}}: {{TECH_2_PURPOSE}}
-- {{TECH_3}}: {{TECH_3_PURPOSE}}
+
+> **AgriFlow Rwanda** tech stack — pre-filled. Add spec-specific libraries as needed.
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Backend** | NestJS (Node.js) | REST API, business logic, RBAC middleware |
+| **Database** | PostgreSQL (AWS RDS) | Relational integrity for ledger + inventory |
+| **Frontend** | Next.js + Tailwind + React Query + Zustand | Admin portal, order management, reporting |
+| **Mobile** | Flutter (or React Native) | Offline-first picker + driver apps |
+| **Infrastructure** | AWS (RDS, S3, Lambda), Docker | Cloud hosting, file storage, containerization |
+| **Auth** | JWT + NestJS Guards | RBAC enforcement at API boundary |
+| **File Storage** | AWS S3 | QC rejection photos, PoD images |
+| **Sync** | Local SQLite + REST sync | Offline-first mobile data persistence |
 
 ### Components
 
@@ -174,6 +204,73 @@
 ```json
 {{RESPONSE_2_EXAMPLE}}
 ```
+
+---
+
+## Ledger Design
+
+> Include this section for any spec touching inventory, stock movements, or financial transactions (Epics 4, 5, 6, 8).
+
+Every stock movement in AgriFlow is a **double-entry ledger record** — each entry has both a source and destination location. This eliminates stock "appearing" or "disappearing" and ensures instant reconciliation.
+
+### Movement Record Pattern
+
+```sql
+CREATE TABLE stock_movements (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id         UUID NOT NULL REFERENCES inventory_batches(id),
+  movement_type    VARCHAR(50) NOT NULL,  -- RECEIVE, PICK, TRANSFER, ADJUST, WRITE_OFF
+  source_location  VARCHAR(100),          -- NULL only for initial receive
+  dest_location    VARCHAR(100),          -- NULL only for write-off
+  quantity         DECIMAL(10,3) NOT NULL CHECK (quantity > 0),
+  unit             VARCHAR(20) NOT NULL,
+  performed_by     UUID NOT NULL REFERENCES users(id),
+  performed_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reference_id     UUID,                  -- links to order_id, qc_inspection_id, etc.
+  notes            TEXT,
+  is_active        BOOLEAN NOT NULL DEFAULT true
+);
+-- Constraint: at least one of source or destination must be set
+ALTER TABLE stock_movements
+  ADD CONSTRAINT chk_ledger_entry CHECK (
+    source_location IS NOT NULL OR dest_location IS NOT NULL
+  );
+```
+
+**Rule:** No inventory mutation without a corresponding `stock_movements` row. APIs that update batch quantities must insert to this table in the same transaction.
+
+---
+
+## Offline Behavior
+
+> Include this section for any spec touching the mobile apps (Epics 4, 7 — warehouse picker and driver).
+
+AgriFlow mobile apps must operate without network connectivity for a minimum of **8 continuous hours** (PRD constraint C4).
+
+### Offline Strategy
+
+| Concern | Strategy |
+|---------|----------|
+| **Data storage** | SQLite on-device (Flutter) or IndexedDB (React Native) for pending operations |
+| **Sync trigger** | On network reconnect: upload pending queue, then pull server delta |
+| **Conflict resolution** | Server-wins for inventory counts; last-write-wins for status fields with timestamp comparison |
+| **Queue durability** | Pending operations persisted to local DB — survive app restart |
+| **User feedback** | Offline indicator in UI; pending operation count displayed |
+
+### Sync Queue Record Pattern
+
+```typescript
+interface PendingOperation {
+  id: string;              // local UUID
+  type: 'QC_SUBMIT' | 'POD_CAPTURE' | 'BATCH_RECEIVE' | 'PICK_CONFIRM';
+  payload: object;         // full API request body
+  createdAt: string;       // ISO timestamp
+  retryCount: number;      // max 3 before flagging for manual review
+  status: 'pending' | 'syncing' | 'failed';
+}
+```
+
+**Acceptance requirement:** Any story touching mobile must include a test scenario: "Given the device is offline, when [action is performed], then the operation is queued locally and synced when connectivity is restored."
 
 ---
 

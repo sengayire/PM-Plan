@@ -16,7 +16,7 @@
 ---
 
 ## 3. Business Context
-AgriFlow's Farmer/Supplier persona explicitly needs "performance-based ratings" (GEMINI.md Section 3). Without objective scorecard data, sourcing decisions rely on gut feel, and there is no mechanism to identify which suppliers are driving the most produce loss through poor quality or late deliveries. This story transforms the supplier profile into an actionable performance management tool.
+AgriFlow's Farmer/Supplier persona explicitly needs "performance-based ratings" (README.md §Key Personas). Without objective scorecard data, sourcing decisions rely on gut feel, and there is no mechanism to identify which suppliers are driving the most produce loss through poor quality or late deliveries. This story transforms the supplier profile into an actionable performance management tool.
 
 ---
 

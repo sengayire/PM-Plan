@@ -249,6 +249,83 @@ else
     print_warn "Traceability matrix not found (recommended for complex PRDs)"
 fi
 
+# AgriFlow Constraint Checks
+print_header "AgriFlow Rwanda — Constraint Checks (C1–C5)"
+
+# C1: No hard deletes
+if grep -qiE "\bDELETE\b.*(FROM|record|permanently)" "$PRD_FILE"; then
+    print_fail "C1 VIOLATION: Hard delete language detected — use 'is_active: false' (soft delete only)"
+elif grep -qiE "permanently (remove|delete|drop)" "$PRD_FILE"; then
+    print_fail "C1 VIOLATION: Permanent deletion language — all deactivation must use is_active=false"
+else
+    print_pass "C1: No hard delete language detected"
+fi
+
+# C2: Ledger / double-entry
+if grep -qiE "(stock|inventory|movement|transfer|batch)" "$PRD_FILE"; then
+    if grep -qiE "(source_location|destination_location|double.entry|ledger)" "$PRD_FILE"; then
+        print_pass "C2: Ledger / double-entry reference present for inventory scope"
+    else
+        print_warn "C2: Document covers inventory but has no source_location/destination_location reference — add ledger design section"
+    fi
+else
+    print_pass "C2: No inventory scope detected — ledger check skipped"
+fi
+
+# C3: QC gating / QUARANTINE
+if grep -qiE "(receiv|batch|QC|quality)" "$PRD_FILE"; then
+    if grep -qiE "(QUARANTINE|quarantine)" "$PRD_FILE"; then
+        print_pass "C3: QUARANTINE routing referenced"
+    else
+        print_warn "C3: Document covers receiving/QC scope but QUARANTINE routing not mentioned — add QC gate requirement"
+    fi
+else
+    print_pass "C3: No receiving/QC scope detected — QUARANTINE check skipped"
+fi
+
+# C4: Offline-first mobile
+if grep -qiE "(mobile|driver|picker|flutter|react.native)" "$PRD_FILE"; then
+    if grep -qiE "(offline|sync|connectivity|queue)" "$PRD_FILE"; then
+        print_pass "C4: Offline-first / sync behavior referenced for mobile scope"
+    else
+        print_fail "C4 VIOLATION: Mobile scope detected but no offline or sync requirement stated — mobile apps must support 8h offline minimum"
+    fi
+else
+    print_pass "C4: No mobile scope detected — offline check skipped"
+fi
+
+# C5: Audit trail / compliance mode
+if grep -qiE "(audit|compliance|FDA|RICA|inspection|Audit_Logs)" "$PRD_FILE"; then
+    print_pass "C5: Audit trail / compliance reference present"
+else
+    print_warn "C5: No audit trail or compliance reference — every AgriFlow PRD should reference Audit_Logs and Rwanda FDA compliance"
+fi
+
+# AgriFlow-specific: storage_type
+if grep -qiE "(product|batch|inventory|catalog)" "$PRD_FILE"; then
+    if grep -qiE "(storage_type|COLD_CHAIN|DRY_STORAGE|FROZEN|AMBIENT)" "$PRD_FILE"; then
+        print_pass "storage_type: Referenced for product/batch scope"
+    else
+        print_warn "storage_type: Product/batch scope detected but storage_type ENUM not mentioned — required for Epics 3–9"
+    fi
+fi
+
+# AgriFlow-specific: FIFO clarification
+if grep -qiE "(FIFO|picking|pick.list|fulfillment)" "$PRD_FILE"; then
+    if grep -qiE "(expiry|expiration)" "$PRD_FILE"; then
+        print_pass "FIFO: Expiry-based FIFO referenced (correct)"
+    else
+        print_warn "FIFO: Picking/fulfillment scope detected — confirm FIFO is expiry-date-based, not receipt-date-based"
+    fi
+fi
+
+# AgriFlow-specific: Rwanda compliance section
+if grep -qiE "(Rwanda FDA|RICA|RSB)" "$PRD_FILE"; then
+    print_pass "Compliance: Rwanda FDA / RICA / RSB reference present"
+else
+    print_warn "Compliance: No Rwanda FDA/RICA/RSB reference — add Compliance Requirements section"
+fi
+
 # Quality Checks
 print_header "Quality Checks"
 

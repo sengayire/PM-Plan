@@ -1,0 +1,11 @@
+feature,epic,reach,impact,confidence,effort_person_weeks,rice_score,kano_type,moscow,notes
+QC Inspection Workflow (Story 4.1),Epic 4 — Smart Receiving,60,3,0.9,1,162,Basic,Must Have,"60 batches/day × 3 clerks; blocks spoilage routing — no partial scoring"
+Traceability ID Generation (Story 4.2),Epic 4 — Smart Receiving,60,2,0.8,0.5,192,Basic,Must Have,"Low effort formula-based ID; high FDA compliance value — highest RICE in sprint"
+QUARANTINE Routing Mobile UI (Story 4.3),Epic 4 — Smart Receiving,60,3,0.8,1.5,96,Basic,Must Have,"Required after 4.1; heavier mobile build effort reduces score"
+Receiving Dashboard (Story 4.4),Epic 4 — Smart Receiving,5,1,0.7,1,35,Performance,Should Have,"Serves only managers; deprioritize if Sprint 3 is at capacity"
+Offline-First Driver App (Story 7.3),Epic 7 — Logistics & Delivery,15,3,0.9,2,20.25,Basic,Must Have,"Low reach (15 drivers) but C4 compliance constraint makes this non-negotiable regardless of RICE"
+Double-Entry Ledger API (Story 5.1),Epic 5 — Inventory Engine,100,3,1.0,1.5,200,Basic,Must Have,"All stock movements; financial integrity + audit mode dependency"
+FIFO Picking Enforcement (Story 5.2),Epic 5 — Inventory Engine,10,3,0.9,1,27,Basic,Must Have,"10 pickers; prevents spoilage; forced FIFO is a basic expectation not a feature"
+Predictive Reorder Alerts (Story 5.4),Epic 5 — Inventory Engine,5,2,0.5,2,2.5,Excitement,Could Have,"Low confidence (new ML scope); deprioritize to Phase 2"
+Consignment Settlement Invoice (Story 8.3),Epic 8 — Consignment & Retail,20,2,0.8,1.5,21.3,Performance,Should Have,"Finance team can manual-settle initially; automate in Sprint 6"
+Temperature Log Dashboard (Story 9.2),Epic 9 — Loss & Compliance,3,1,0.7,1,2.1,Excitement,Could Have,"FDA inspector use case; audit export (Story 9.3) is higher priority"

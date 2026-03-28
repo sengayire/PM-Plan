@@ -106,33 +106,19 @@
 
 ## User Personas
 
-### Primary Persona: {{PERSONA_1_NAME}}
-**Demographics:**
-- {{DEMOGRAPHIC_INFO}}
+> **AgriFlow Rwanda** — use the canonical personas below. Do not replace with generic placeholders.
 
-**Goals:**
-- {{PERSONA_GOAL_1}}
-- {{PERSONA_GOAL_2}}
-
-**Pain Points:**
-- {{PAIN_POINT_1}}
-- {{PAIN_POINT_2}}
-
-**Behaviors:**
-- {{BEHAVIOR_1}}
-- {{BEHAVIOR_2}}
-
-### Secondary Persona: {{PERSONA_2_NAME}}
-**Demographics:**
-- {{DEMOGRAPHIC_INFO}}
-
-**Goals:**
-- {{PERSONA_GOAL_1}}
-- {{PERSONA_GOAL_2}}
-
-**Pain Points:**
-- {{PAIN_POINT_1}}
-- {{PAIN_POINT_2}}
+| Persona | Role | Primary Pain Point | Key Need |
+|---------|------|--------------------|----------|
+| **Admin** | Platform owner, user management | Manual user provisioning, no access control | RBAC setup, activation flow |
+| **Procurement Manager** | Supplier relationships, purchase orders | WhatsApp ordering, informal supplier vetting | Structured SRM, performance ratings |
+| **Warehouse QC Clerk** | Incoming batch inspection | No structured QC tool, subjective grading | Forced QC gate → QUARANTINE routing, photo evidence |
+| **Warehouse Picker** | Fulfillment, FIFO picking | Silent FIFO overrides, no digital pick list | Forced expiry-based FIFO, offline-capable pick list |
+| **Finance Manager** | Inventory valuation, consignment settlement | Manual ledger reconciliation | Double-entry stock movements, settlement invoices |
+| **Logistics Manager / Driver** | Delivery routing, PoD capture | No connectivity on routes, paper PoD | Offline-first app, geofenced drop-off, digital PoD |
+| **Supermarket Manager** | JIT ordering, invoice management | WhatsApp orders, no digital invoice | B2B order portal, digital invoicing |
+| **Supplier (Farmer)** | Supply scheduling, payment visibility | Unpredictable demand, informal feedback | Performance dashboard, RICA-aligned QC grades |
+| **System Auditor** | Rwanda FDA compliance inspection | Scattered audit logs | Instant audit mode export, temperature + batch origin traces |
 
 ---
 
@@ -216,6 +202,49 @@ _Continue with additional functional requirements as needed..._
 - {{NFR_SEC_1_AC_2}}
 
 **Compliance:** {{NFR_SEC_1_COMPLIANCE}}
+
+---
+
+### Compliance Requirements (Rwanda FDA / RICA / RSB)
+
+> **AgriFlow Rwanda** — these requirements are non-negotiable for Phase 1.
+
+#### NFR-COMP-001: Rwanda FDA Audit Mode [MUST]
+
+**Description:**
+The system must support an audit inspection mode that allows a Rwanda FDA inspector to instantly retrieve batch origin records, QC inspection results, temperature logs, and the full chain of custody for any produce batch by Traceability ID.
+
+**Acceptance Criteria:**
+- Traceability ID lookup returns complete batch lifecycle within 3 seconds
+- QC inspection records include inspector identity, timestamp, grade, and rejection photos
+- Temperature logs are immutable once written
+- All RBAC-denied access attempts appear in `Audit_Logs`
+
+**Compliance standard:** Rwanda FDA food safety regulations, RICA produce grading standards
+
+---
+
+#### NFR-COMP-002: Soft Delete Only — No Hard Deletes [MUST]
+
+**Description:**
+No entity in the system (users, batches, suppliers, orders, movements) may be permanently deleted. All deactivation uses `is_active: false` so audit trails never become orphaned.
+
+**Acceptance Criteria:**
+- No `DELETE FROM` statements in application code (except test fixtures)
+- All API endpoints that "remove" data set `is_active = false`
+- Deactivated records remain queryable by System Auditor role
+
+---
+
+#### NFR-COMP-003: RICA-Aligned QC Grading [MUST]
+
+**Description:**
+QC grading must follow Rwanda RICA produce standards. Grades must be pre-defined ENUM values, not free text. Any batch that does not achieve `PASSED` status must route to `QUARANTINE` programmatically without manual override.
+
+**Acceptance Criteria:**
+- QC grade ENUM defined and enforced at database level
+- API rejects any batch status transition from QUARANTINE to DELIVERED without re-inspection
+- Rejection requires photo evidence upload before submission
 
 ---
 
@@ -418,6 +447,18 @@ _[Continue with user stories for Epic 2]_
 ---
 
 ## Constraints
+
+### System Constraints (C1–C5) — AgriFlow Rwanda Non-Negotiables
+
+These constraints are enforced across all Phase 1 epics. They must be reflected in every story's Technical Context and every task's Acceptance Criteria.
+
+| ID | Constraint | Enforcement |
+|----|------------|-------------|
+| **C1** | **No hard deletes** — all entities use `is_active: false` | Schema-level: no `DELETE` in app code; API returns 404 for `is_active=false` records |
+| **C2** | **Double-entry ledger** — every stock movement has explicit `source_location` and `destination_location` | DB constraint: `CHECK (source_location IS NOT NULL OR destination_location IS NOT NULL)` |
+| **C3** | **QC gating** — batches without `PASSED` QC status route to `QUARANTINE` programmatically | API enforces status machine; no manual bypass without re-inspection |
+| **C4** | **Offline-first mobile** — warehouse picker and driver apps operate without connectivity for ≥8 hours | Local SQLite/IndexedDB sync; conflict resolution strategy required per story |
+| **C5** | **Compliance audit mode** — temperature logs, batch origins, RBAC audit trails instantly retrievable | `Audit_Logs` table written on every state change; Traceability ID format: `[Date]-[SupplierID]-[SKU]` |
 
 ### Technical Constraints
 - {{TECH_CONSTRAINT_1}}
