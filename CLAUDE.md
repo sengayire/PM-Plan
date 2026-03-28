@@ -59,6 +59,112 @@ When creating or editing planning documents, follow GEMINI.md section 6 strictly
 - Story files: `user-story-{epic}.{story}.md`
 - Task files: `task-{epic}.{story}.{task}.md`
 
+## Git Workflow Standards
+
+These rules apply to every branch, commit, and PR Claude creates in this repository.
+
+### Branch Naming
+
+```
+{type}/{scope}
+```
+
+| Type | When to use |
+|------|-------------|
+| `docs` | New or updated planning artifacts (stories, tasks, epics, PRD) |
+| `feat` | Net-new feature scoping work |
+| `fix` | Corrections to existing documents |
+| `chore` | Housekeeping — restructuring, renaming, config, standards |
+| `epic` | Epic-level work that spans multiple stories |
+
+**Rules:**
+- Always branch from `main` (`git checkout main && git pull` first)
+- `{scope}` is kebab-case, max 40 characters
+- Include the Jira key when the work is ticket-scoped (e.g., `FL-42`)
+- Never use an auto-generated worktree name as the branch name
+
+**Examples:**
+```
+docs/epic-2-story-3-rqc-gate
+feat/FL-40-supplier-onboarding
+fix/story-1.2-edge-cases
+chore/branching-standards
+```
+
+---
+
+### Commit Message Template
+
+```
+{type}({scope}): {short description}          ← max 72 chars
+
+{body}                                         ← what changed and why; omit if obvious
+                                               ← wrap at 80 chars
+
+Jira: {KEY}                                    ← omit if no ticket
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+```
+
+**Types:** `docs` | `feat` | `fix` | `chore` | `refactor`
+
+**Scope:** use the epic/story ref or area — e.g., `epic-2`, `story-3.2`, `prd`, `epics`
+
+**Example:**
+```
+docs(story-2.3): add BDD acceptance criteria for RQC QC gate
+
+Added Given/When/Then scenarios for quarantine routing when a batch
+does not have PASSED QC status. Includes two edge cases: partial
+batch failure and re-inspection workflow.
+
+Jira: FL-42
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+```
+
+---
+
+### PR Naming
+
+```
+[TYPE] {scope}: {short description}            ← max 72 chars total
+```
+
+**Examples:**
+```
+[DOCS] story-2.3: RQC batch QC gate acceptance criteria
+[FEAT] epic-4: offline-first driver delivery flow planning
+[CHORE] standards: branch naming and commit templates
+[FIX] story-1.2: correct edge case mitigation wording
+```
+
+---
+
+### PR Description Template
+
+```markdown
+## Summary
+- {bullet: what changed}
+- {bullet: why — motivation or Jira context}
+
+## Scope
+- **Epics affected:** E{n} — {name}
+- **Stories / tasks:** story.{E}.{S}, task.{E}.{S}.{T}
+- **Jira:** {KEY}
+
+## Checklist
+- [ ] Follows GEMINI.md §6 writing standards
+- [ ] User stories use AS A / I WANT TO / SO THAT format
+- [ ] Acceptance criteria in BDD (Given / When / Then)
+- [ ] At least 2 edge cases documented per story
+- [ ] Tasks are specific, actionable, and hour-estimable
+- [ ] Audit trail, RBAC, and data implications noted where relevant
+- [ ] No orphaned doc cross-references
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+```
+
+---
+
 ## Glossary
 
 - **SBR:** Service-Based Retail (AgriFlow retains stock ownership on consignment)

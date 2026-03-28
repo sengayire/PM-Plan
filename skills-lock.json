@@ -1,10 +1,10 @@
 {
   "version": 1,
   "skills": {
-    "business-analyst": {
-      "source": "404kidwiz/claude-supercode-skills",
+    "product-manager": {
+      "source": "aj-geddes/claude-code-bmad-skills",
       "sourceType": "github",
-      "computedHash": "5fedbb6177aca0d544b694c1a32e5dfb8cb39dd5f57b7a31ead56de77c4f0f86"
+      "computedHash": "b764a970e75e086ad7602bcbbf573701847d068745311ca4e4316cdccf77dc03"
     }
   }
 }
