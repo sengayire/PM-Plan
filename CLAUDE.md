@@ -9,25 +9,67 @@ This is the **product management planning repository** for **AgriFlow Rwanda** (
 ## Repository Structure
 
 ```
-GEMINI.md              — AI PM context file (core vision, personas, constraints, glossary, output guidelines)
-READMED.md             — High-level product roadmap organized by phase and epic
+README.md              — Product reference: market context, personas, strategic phases
+CLAUDE.md              — Operative file: constraints, writing standards, git workflow, agent boot sequence
+PRODUCT-CONTEXT.md     — Redirect to README.md (preserved for git history)
 docs/
   prd/PRD.md           — Product Requirements Document (tech stack, constraints, MVP scope)
   epics/EPICS.md       — Jira-ready backlog: epics -> user stories -> technical tasks
-  epics/EPICS-FULL.md  — Extended epic descriptions
+  epics/EPICS-FULL.md  — Extended epic descriptions with compliance notes and dependency chain
+  context/
+    agriflow-agent-context.md — Shared context read by all sub-agents at boot
   stories/             — Detailed user stories and their task breakdowns
     story.{E}.{S}/     — Folder per story (E=epic number, S=story number)
       user-story-{E}.{S}.md
       task-{E}.{S}.{T}.md
+.claude/
+  agents/
+    story-pipeline.md  — Orchestrates product-manager → story-validator → jira-sync
+  skills/
+    product-manager/   — Story + task generation, PRD work, epic breakdown
+    story-validator/   — Validates stories against writing standards (context: fork)
+    jira-sync/         — Syncs story/task files to Jira FL project (manual-only)
 ```
 
 ## Document Hierarchy
 
 **Epic > User Story > Task** — each level links to its parent and children via relative markdown links. Tasks are the smallest unit, scoped to hours of developer work.
 
+---
+
+## Key Personas
+
+1. **Retailer (Supermarket Manager):** Consistent JIT supply, zero spoilage risk, digital ordering away from WhatsApp.
+2. **Farmer/Supplier:** Predictable demand, fair RICA-aligned QC grading, performance-based ratings.
+3. **Warehouse QC Clerk & Picker:** Structured tools that enforce rules — mandatory photos for rejections, forced FIFO picking, no silent overrides.
+4. **Logistics/Delivery Driver:** Offline-first routing, geofenced drop-off validation, PoD capture without connectivity (8-hour minimum).
+
+> Full market context and strategic phases in [README.md](./README.md).
+
+## Agent Boot Sequence
+
+**Every sub-agent spawned for this repository must execute these steps before writing any artifact:**
+
+```
+1. Read docs/context/agriflow-agent-context.md       ← constraints, paths, Jira keys, writing standards
+2. Read docs/epics/EPICS-FULL.md (target epic only)  ← scope, out-of-scope, compliance notes
+3. Check epic dependency chain (context §5)          ← verify hard-blocker dependencies are resolved
+4. Confirm output path: docs/stories/story.{E}.{S}/  ← NEVER write to bmad/ paths
+```
+
+Agents that skip step 1 will silently violate hard constraints (no hard deletes, ledger model, QC gating, offline-first, compliance scope). This is the primary cause of non-compliant artifacts.
+
+**Agent and skill files:**
+- `.claude/agents/story-pipeline` — full pipeline: generate → validate → sync in one command
+- `.claude/skills/product-manager` — story + task generation, PRD work (`effort: high`)
+- `.claude/skills/story-validator` — validates stories (`context: fork`, `effort: low`)
+- `.claude/skills/jira-sync` — syncs to Jira FL project (`disable-model-invocation: true`)
+
+---
+
 ## Key Constraints to Enforce When Generating Documents
 
-These constraints are defined in the PRD and GEMINI.md and must be reflected in all generated planning artifacts:
+These constraints are defined in the PRD and README.md and must be reflected in all generated planning artifacts:
 
 - **No hard deletes** — all entities use soft delete (`is_active: false`). Past audit trails must never become orphaned.
 - **Ledger-based inventory** — every stock movement requires explicit `source_location` and `destination_location` (double-entry).
@@ -45,7 +87,7 @@ These constraints are defined in the PRD and GEMINI.md and must be reflected in 
 
 ## Writing Standards for Generated Artifacts
 
-When creating or editing planning documents, follow GEMINI.md section 6 strictly:
+When creating or editing planning documents, follow README.md section 6 strictly:
 
 - **User Stories** use `AS A [Persona], I WANT TO [Action] SO THAT [Value]` format
 - **Acceptance Criteria** use BDD format (`Given / When / Then`)
@@ -152,7 +194,7 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 - **Jira:** {KEY}
 
 ## Checklist
-- [ ] Follows GEMINI.md §6 writing standards
+- [ ] Follows README.md §6 writing standards
 - [ ] User stories use AS A / I WANT TO / SO THAT format
 - [ ] Acceptance criteria in BDD (Given / When / Then)
 - [ ] At least 2 edge cases documented per story

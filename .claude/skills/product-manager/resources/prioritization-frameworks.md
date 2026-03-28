@@ -856,13 +856,63 @@ Simple 2x2 matrix plotting features by Value (to user/business) vs. Effort (to i
 
 ---
 
+## AgriFlow Rwanda — Prioritization Examples
+
+These examples apply the frameworks above to real AgriFlow Phase 1 decisions.
+
+---
+
+### MoSCoW — Phase 1 MVP Scope
+
+| Feature | Category | Rationale |
+|---------|----------|-----------|
+| RBAC (IAM) — Epic 1 | **Must Have** | Without it, every other module is unsecured; Rwanda FDA compliance fails day 1 |
+| QC gating → QUARANTINE routing — Epic 4 | **Must Have** | Core SBR promise; without it, spoiled produce ships to supermarkets |
+| Double-entry ledger inventory — Epic 5 | **Must Have** | Financial integrity; required for consignment settlement and audit mode |
+| Offline-first driver app — Epic 7 | **Must Have** | Drivers operate in low-connectivity zones; 8h offline minimum per PRD |
+| Supplier performance ratings — Epic 2 | **Should Have** | Important for SRM, but initial onboarding works without automated scoring |
+| Automated consignment settlement — Epic 8 | **Should Have** | Finance team can run manual settlements while automation is built |
+| Temperature log dashboard — Epic 9 | **Could Have** | Rwanda FDA inspection tool; useful but audit export is the blocker, not dashboard |
+| WhatsApp ordering integration | **Won't Have** | Phase 2 — B2B portal (Epic 6) replaces WhatsApp, full integration is post-MVP |
+
+---
+
+### RICE Scoring — Sprint 3 Story Candidates
+
+Formula: `RICE = (Reach × Impact × Confidence) / Effort`
+
+| Story | Reach | Impact | Confidence | Effort (person-wks) | RICE Score | Decision |
+|-------|-------|--------|------------|---------------------|------------|---------|
+| 4.1: QC Inspection Workflow | 3 clerks × 20 batches/day = 60 | 3 (Massive — blocks spoilage) | 90% | 1 | **162** | Sprint 3 top priority |
+| 4.2: Traceability ID Generation | 60 (same scope) | 2 (High — FDA audit) | 80% | 0.5 | **192** | Sprint 3 — quick win |
+| 4.3: QUARANTINE Routing Mobile UI | 60 | 3 (Massive — enforces QC gate) | 80% | 1.5 | **96** | Sprint 3 — required after 4.1 |
+| 4.4: Receiving Dashboard | 5 managers | 1 (Medium — visibility) | 70% | 1 | **35** | Defer to Sprint 4 if pressed |
+
+**Reading:** 4.2 scores highest because effort is low (ID generation is a formula) while compliance impact is high. 4.4 serves only managers and is lower-stakes — deprioritize if sprint is at capacity.
+
+---
+
+### Kano Analysis — AgriFlow Feature Types
+
+| Feature | Kano Type | Implication |
+|---------|-----------|-------------|
+| Audit trail for every stock movement | **Basic** — users expect it, dissatisfied if absent | Non-negotiable; don't treat as optional |
+| FIFO picking enforcement (expiry-based) | **Basic** | Warehouse QC Clerk expects forced FIFO; silent override = spoilage risk |
+| Real-time inventory dashboard | **Performance** | More data → more satisfaction (linear); invest proportionally |
+| Predictive reorder alerts | **Excitement** | Surprising delight for procurement managers; zero expectation today |
+| Driver geofenced drop-off validation | **Performance** | More geofences configured → more delivery accuracy |
+| One-tap PoD photo capture (offline) | **Excitement** | Drivers don't expect this; if it works offline it delights |
+
+**AgriFlow implication:** Basics (audit trail, FIFO, soft delete) must be done before any excitement features. Investing in excitement features while basics are missing creates user frustration regardless of delight potential.
+
+---
+
 ## Additional Resources
 
 - **RICE Calculator:** Use `../scripts/prioritize.py`
 - **PRD Template:** See `../templates/prd.template.md`
 - **Main Skill Guide:** See `../SKILL.md`
-- **Detailed Reference:** See `../REFERENCE.md`
 
 ---
 
-**Last Updated:** 2025-12-09
+**Last Updated:** 2026-03-28

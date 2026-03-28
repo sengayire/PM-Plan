@@ -2,7 +2,7 @@
 
 > **Jira-Ready Backlog:** Epics > User Stories > Technical Tasks
 > **Naming:** `story.{E}.{S}` / `task-{E}.{S}.{T}` — E=epic, S=story, T=task
-> **Authoritative Source:** [PRD](../prd/PRD.md) Section 5 | [GEMINI.md](../../GEMINI.md) Section 6
+> **Authoritative Source:** [PRD](../prd/PRD.md) Section 5 | [CLAUDE.md](../../CLAUDE.md) §Writing Standards
 
 ---
 
