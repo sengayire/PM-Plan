@@ -1,68 +1,71 @@
-# User Story 2.1: Master Product Catalog Management
+# User Story 2.1: Supplier Onboarding & Profile Management
 
 ## 1. Meta Information
-- **Epic:** [Epic 2: Master Product & Supplier Catalog](../../epics/EPICS.md)
-- **Story Priority:** High (Foundation for Inventory and QC workflows)
-- **Story Point Estimation:** Unestimated (To be sized by Engineering)
-- **Status:** Draft
+- **Epic:** [Epic 2: Partner & Supplier Ecosystem (FL-5)](../../epics/EPICS.md)
+- **Story Priority:** High (MUST — prerequisite for price mapping and receiving workflows)
+- **Story Point Estimation:** ~26h (5 tasks)
+- **Status:** To Do
+- **Jira:** FL-40
 
 ## 2. User Story
 **As a** Procurement Manager,
-**I want to** define and maintain products (SKUs) along with their specific shelf-life characteristics and storage temperature requirements,
-**So that** the system can continuously automate expiry date calculations during receiving flows, enforce FIFO rules, and alert the team about potential spoilage.
+**I want to** register new suppliers in the system with their full profile and attach their signed commercial agreement document,
+**So that** the warehouse only ever accepts deliveries from verified, contracted suppliers and Finance has a complete, auditable record of every supplier relationship.
 
 ---
 
 ## 3. Business Context
-In AgriFlow's highly perishable supply chain (e.g., TOMATOES, POTATOES), every hour counts. Without a standardized central "Product Master", the warehouse relies on human memory and scattered spreadsheets to determine how long produce can stay in storage before going bad. By digitizing `shelf_life_days` and `storage_temp` parameters per SKU, we automate the intelligence required to run predictable operations, protecting business margins and satisfying Rwandan FDA compliance.
+AgriFlow's "front gate" rule: no unverified supplier should ever deliver produce to the warehouse. Without a digital supplier registry with attached contracts, receiving clerks have no way to verify whether a delivery is from an approved partner, and Finance has no documented basis for the agreed pricing. This story establishes that registry as the gating prerequisite for the full supply chain.
 
 ---
 
 ## 4. Acceptance Criteria (BDD Format)
 
-### Scenario 1: Creating a new SKU with valid shelf-life parameters
-**Given** the Procurement Manager is logged into the Master Data dashboard
-**When** they submit the "Create Product" form with "Tomatoes", a shelf-life of "4 days", requested temperature "4°C - 8°C", and `unit_of_measure` as "KG"
-**Then** the system should gracefully create the new product entity
-**And** the product should become immediately available in the supplier mapping and receiving workflows.
+### Scenario 1: Registering a new supplier
+**Given** the Procurement Manager completes the "Register Supplier" form with name, contact, location, and bank details
+**When** they submit
+**Then** the system creates the supplier with `is_active: true`
+**And** the new supplier immediately appears in the Supplier Directory and is selectable in product price mapping and receiving workflows.
 
-### Scenario 2: Preventing impossible data entries
-**Given** a user is configuring a new product
-**When** they enter a negative number for `shelf_life_days` or leave the `unit_of_measure` blank
-**Then** the UI must prevent submission and outline the invalid fields
-**And** the backend API must return a `400 Bad Request` if attempting to bypass the UI validation.
+### Scenario 2: Attaching a contract document
+**Given** a registered supplier's profile page is open
+**When** the Procurement Manager uploads a PDF contract document
+**Then** the file is stored in AWS S3 under `supplier-contracts/{supplierId}/` with private ACL
+**And** a permanent, viewable link is attached to the supplier's profile accessible via a 1-hour pre-signed URL.
 
-### Scenario 3: Viewing and Filtering the Product Master List
-**Given** multiple products exist in the catalog
-**When** the Procurement Manager navigates to the "Product Catalog" view
-**Then** they should see a paginated list of all system SKUs
-**And** they should be able to filter by attributes or search by product name/SKU code.
+### Scenario 3: Suspending a supplier
+**Given** a supplier needs to be temporarily suspended
+**When** the Procurement Manager toggles `is_active: false` with a mandatory suspension reason note
+**Then** the supplier is hidden from all future receiving workflows and price mapping dropdowns
+**And** their full profile, documents, and transaction history remain intact and searchable by Admin and Auditor roles.
 
 ---
 
 ## 5. Technical Tasks (Developer Implementation)
-- [ ] **Task 1:** [Create the `Product_Master` PostgreSQL schema.](./task-2.1.1.md)
-- [ ] **Task 2:** [Implement the Backend CRUD API endpoints for the Product Master.](./task-2.1.2.md)
-- [ ] **Task 3:** [Build the Frontend "Product Catalog" Data Table view.](./task-2.1.3.md)
-- [ ] **Task 4:** [Build the Frontend "Create / Edit Product" Modal or Route.](./task-2.1.4.md)
+- [ ] **Task 1:** [Create Suppliers table PostgreSQL schema and migration.](./task-2.1.1.md) → Jira: FL-35
+- [ ] **Task 2:** [Build Supplier Registration & Profile REST API (NestJS).](./task-2.1.2.md) → Jira: FL-43
+- [ ] **Task 3:** [Build Supplier Directory list UI (Next.js).](./task-2.1.3.md) → Jira: FL-37
+- [ ] **Task 4:** [Implement S3 contract document upload for supplier agreements.](./task-2.1.4.md) → Jira: FL-44
+- [ ] **Task 5:** [Build Supplier Profile page (view, edit, documents tab).](./task-2.1.5.md) → Jira: FL-45
 
 ---
 
 ## 6. Edge Cases & Risk Mitigation
-- **What if a product's shelf-life rules change after it has been actively transacted?**
-  - *Mitigation:* Modifying the `shelf_life_days` of a master product should ONLY apply to *future* receiving batches. Existing warehouse inventory batches must retain the expiry dates calculated at the time they were originally received to preserve transaction history.
-- **What if a product line is discontinued entirely?**
-  - *Mitigation:* We cannot hard-delete the product because past audit logs and completed financial movements depend on its foreign key ID. The UI must provide a "Deactivate" toggle (`is_active: false`) which simply hides the product from future dropdowns in the Receiving/Procurement flow.
+- **Duplicate supplier name**
+  - *Mitigation:* System warns (does not block) if a submitted name closely matches an existing record using fuzzy matching. Returns a `{ warning, matches }` response for the PM to review before confirming creation.
+- **Contract document upload failure (S3 timeout)**
+  - *Mitigation:* Partial failure tolerance — if the S3 upload fails, the supplier profile is still saved without a document URL. The PM can re-attempt the upload from the Documents tab. A clear error toast explains the document was not saved.
 
 ---
 
 ## 7. Dependencies
-- Dependent on Epic 1 (IAM) for the Auth Middleware verifying the Procurement Manager's role.
-- Exists as a dependency blocker for User Story 2.2 (Supplier-Product Mapping).
+- Blocked by Epic 1 (IAM) — RBAC middleware must exist.
+- Blocked by Epic 1 Story 1.1 — `Users` table must exist for `Audit_Logs` FK.
+- Unblocks Story 2.2 (Supplier-Product Price Mapping) — `Suppliers` table must exist before price mappings can be created.
+- Unblocks Epic 4 (Smart Receiving) — receiving clerks must be able to select a verified supplier for each delivery.
 
 ---
 
 ## 8. PM Open Questions / Clarifications
-- **userAskQuestion:** Should Products be categorized hierarchically (e.g., Produce -> Vegetables -> Root) or is a simple string label (e.g., "Vegetables") sufficient for the Phase 1 MVP?
-- **userAskQuestion:** Do we need to store SKU images/thumbnails in the Product Master for the mobile picker UI to reduce visual errors, or is text-only recognition sufficient to launch with?
-- **userAskQuestion:** How should we structure the `sku_code` logic? Will it be auto-generated by the backend sequence (e.g., `PRD-1001`) or manually entered (and verified unique) by the Procurement Manager (e.g., `TOM-RED-01`)?
+- **userAskQuestion:** Should the system enforce that a contract document is uploaded before a supplier can be used in a receiving workflow, or is the document optional at onboarding and can be added later?
+- **userAskQuestion:** Do we need a formal "Maker/Checker" approval workflow for new supplier registrations (Procurement Manager creates → Finance/Admin approves), or can authenticated Procurement Managers register suppliers autonomously?

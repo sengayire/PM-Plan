@@ -21,12 +21,12 @@
 4. **Logistics/Delivery Drivers:** Need offline-first tools for routing, geofenced drop-offs, and Proof of Delivery (PoD).
 
 ## 4. Technical & Architectural Constraints
-- **Stack Recommendations:** Backend in Node.js (NestJS) or Python (FastAPI). Mobile apps in Flutter or React Native. Infrastructure on AWS (RDS, S3 for QC photos, Lambda for alerts).
-- **Ledger-Based Inventory (Double-Entry):** Every stock movement must have a explicit source and destination location in a strict, non-erasable PostgreSQL database. No "hard deletes" allowed.
+- **Stack:** Backend in **Node.js (NestJS)**. Mobile apps in Flutter or React Native. Infrastructure on AWS (RDS, S3 for QC photos, Lambda for alerts).
+- **Architecture:** **Service-Modular Monolith** for Phase 1 MVP — single deployable service with separated modules. Microservices extraction (Inventory, Orders) is a Phase 2 ambition, not an MVP target.
+- **Ledger-Based Inventory (Double-Entry):** Every stock movement must have an explicit source and destination location in a strict, non-erasable PostgreSQL database. No "hard deletes" allowed.
 - **Quality Control Logic:** Any batch that does not receive a 'PASSED' QC status must be automatically routed to 'QUARANTINE' stock status.
-- **Offline-First:** Mobile apps for drivers and warehouse staff MUST function in low/no-connectivity areas and sync when online.
-- **Compliance:** Built-in "Audit Mode" for Rwanda FDA inspections (instant temperature logs, strict RBAC audit trails, and batch origin tracking).
-- **Architecture:** Dockerized microservices (Inventory and Order Management are decoupled to scale independently).
+- **Offline-First:** Mobile apps for drivers and warehouse staff MUST function in low/no-connectivity areas and sync when online. Minimum offline tolerance: 8 hours.
+- **Compliance:** Built-in "Audit Mode" for Rwanda FDA, RICA, and RSB inspections (instant temperature logs, strict RBAC audit trails, and batch origin tracking). See PRD Section 3 for per-authority requirements.
 
 ## 5. Strategic Phases & Domains
 - **Phase 1 (MVP - Current):** Operational Discipline (Building a "Digital Twin" of the physical warehouse). The core domains include:
@@ -75,14 +75,10 @@
 - **Traceability ID:** A unique system-generated tag linking Supplier, Date, and QC Grade.
 
 ### D. Reference files
-- [Product Requirements Document (PRD)](./docs/01-product-business/PRD.md)
-- [Epics](./docs/01-product-business/epics.md)
-- [User Stories](./docs/01-product-business/user-stories.md)
-- [Backlog](./docs/01-product-business/backlog.md)
-- [Roadmap](./docs/01-product-business/roadmap.md)
-- [KPIs & Metrics](./docs/01-product-business/KPIs_and_Metrics.md)
-- [Personas](./docs/02-design-ux/personas.md)
-- [Design System](./docs/02-design-ux/design-system.md)
-- [Architecture](./docs/03-engineering/architecture.md)
-- [Database Schema](./docs/03-engineering/database-schema.md)
+- [Product Requirements Document (PRD)](./docs/prd/PRD.md)
+- [Epics Overview](./docs/epics/EPICS.md)
+- [Epics Full Detail](./docs/epics/EPICS-FULL.md)
+- [Roadmap](./docs/prd/PRD.md) — Sections 5 (Phase 1) and 10 (Future Phases)
+- [User Stories](./docs/stories/) — organised by `story.{epic}.{story}/`
+- [storage_type Dependency Contract](./docs/contracts/storage-type-contract.md) — required reading before Epic 4 and Epic 9 sprint kickoffs
 
