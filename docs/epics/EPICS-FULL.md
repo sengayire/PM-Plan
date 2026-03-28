@@ -91,7 +91,7 @@ This roadmap has been organized into **independent, functional Epics**. Each Epi
 
 ---
 
-## 🤖 Phase 13: AI & Intelligence (Competitive Moat)
+## 🤖 Phase 3: AI & Intelligence (Competitive Moat)
 
 ### Epic 13: Predictive Supply Chain AI
 
