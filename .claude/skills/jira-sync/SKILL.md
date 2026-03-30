@@ -1,10 +1,9 @@
 ---
 name: jira-sync
 description: Syncs AgriFlow local story and task markdown files to the FL Jira project. Creates new issues for stories and subtasks for tasks that don't exist yet. Updates existing issues if acceptance criteria or estimates have changed. Sprint-aware — assigns issues to the correct sprint based on the epic-sprint mapping. Run after story-validator passes.
-allowed-tools: Read, Glob, Grep, mcp__atlassian__createJiraIssue, mcp__atlassian__editJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraIssue, mcp__atlassian__addCommentToJiraIssue, mcp__atlassian__getVisibleJiraProjects, mcp__atlassian__getJiraProjectIssueTypesMetadata, mcp__atlassian__getTransitionsForJiraIssue, mcp__atlassian__transitionJiraIssue, mcp__atlassian__createIssueLink, TodoWrite
-disable-model-invocation: true
+tools: Read, Glob, Grep, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__createJiraIssue, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__editJiraIssue, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__searchJiraIssuesUsingJql, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__getJiraIssue, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__addCommentToJiraIssue, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__getVisibleJiraProjects, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__getJiraProjectIssueTypesMetadata, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__getTransitionsForJiraIssue, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__transitionJiraIssue, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__createIssueLink, mcp__9d7d8137-432d-475f-8cc4-6daf0795f850__fetchAtlassian, TodoWrite
 argument-hint: "[story path, e.g. story.4.1 or sprint-3]"
-context: fork
+updated: 2026-03-28
 ---
 
 # Jira Sync Skill — AgriFlow Rwanda
@@ -39,21 +38,21 @@ Issue types:  Epic, Story (or Task), Sub-task
 
 ---
 
-## Epic → Sprint → Jira Key Reference
+## Epic → Jira Key Reference
 
-| Epic | Jira Epic Key | Sprint | Sprint Status |
-|------|---------------|--------|---------------|
-| Epic 1: IAM | FL-4 | Sprint 1 | Fully synced (FL-13 → FL-28). Do not re-create. |
-| Epic 2: Supplier Ecosystem | FL-5 | Sprint 2 | Fully synced (FL-30 → FL-47). Do not re-create. |
-| Epic 3: Product Catalog | FL-6 | Sprint 2 | Fully synced (FL-29, FL-31–34, FL-42, FL-48–50). Do not re-create. |
-| Epic 4: Smart Receiving | FL-7 | Sprint 3 | Epic exists; stories need sync. |
-| Epic 5: Inventory Engine | FL-8 | Sprint 4 | Epic exists; stories need sync. |
-| Epic 6: B2B Order & Fulfillment | FL-9 | Sprint 5 | Epic exists; stories need sync. |
-| Epic 7: Logistics & Delivery | FL-10 | Sprint 5 | Epic exists; stories need sync. |
-| Epic 8: Consignment & Retail | FL-11 | Sprint 6 | Epic exists; stories need sync. |
-| Epic 9: Loss & Compliance | FL-12 | Sprint 6 | Epic exists; stories need sync. |
+| Epic | Jira Epic Key | Sprint |
+|------|---------------|--------|
+| Epic 1: IAM | FL-4 | Sprint 1 |
+| Epic 2: Partner & Supplier Ecosystem | FL-5 | Sprint 2 |
+| Epic 3: Unified Product Catalog | FL-6 | Sprint 2 |
+| Epic 4: Smart Receiving | FL-7 | Sprint 3 |
+| Epic 5: Inventory Engine | FL-8 | Sprint 4 |
+| Epic 6: B2B Order & Fulfillment | FL-9 | Sprint 5 |
+| Epic 7: Logistics & Delivery | FL-10 | Sprint 5 |
+| Epic 8: Consignment & Retail | FL-11 | Sprint 6 |
+| Epic 9: Loss & Compliance | FL-12 | Sprint 6 |
 
-**Critical:** Epics 1–3 are fully populated in Jira. Running sync on story.1.*, story.2.*, or story.3.* must check for existing issues before creating — never duplicate.
+**Duplicate prevention is always enforced via §C (JQL search before create).** Never rely on this table to determine whether an issue already exists — always query Jira first. The sprint status of each epic changes as stories are synced; this table only provides the static Jira key mapping.
 
 ---
 

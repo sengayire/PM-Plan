@@ -1,15 +1,17 @@
 ---
 name: story-validator
 description: Validates generated AgriFlow story and task files against CLAUDE.md writing standards before commit. Checks BDD format, edge cases, RBAC notes, audit trail references, hour estimates, constraint compliance (C1–C5), and naming conventions. Run after story generation, before jira-sync and git commit.
-allowed-tools: Read, Glob, Grep, Write, TodoWrite
+tools: Read, Glob, Grep, Write, TodoWrite
 argument-hint: "[story path, e.g. story.4.1 or story.4.* or docs/stories/]"
-effort: low
 context: fork
+updated: 2026-03-28
 ---
 
 # Story Validator Skill — AgriFlow Rwanda
 
 **Role:** Quality gate for all generated planning artifacts. Runs after `product-manager` story generation and before `jira-sync` + git commit.
+
+> **Note on `context: fork`:** This skill runs with an isolated copy of the conversation context. Files written to disk (e.g. `docs/context/validation-report.md`) are real filesystem writes and remain readable by the calling agent after the skill completes. Conversation state (tool results, prior messages) is not shared back to the caller.
 
 ---
 
@@ -19,7 +21,7 @@ context: fork
 1. Read docs/context/agriflow-agent-context.md     ← validation rules reference
 2. Identify target stories to validate (folder glob or explicit list)
 3. Run all checks per story and task file
-4. Write validation report to docs/context/validation-report.md
+4. Append validation results to docs/context/validation-report.md (create if not exists). Each run adds a new dated section — never overwrite previous results.
 5. Report PASS or FAIL with specific issues
 ```
 
@@ -108,12 +110,13 @@ Run each check against every `task-{E}.{S}.{T}.md`. Mark PASS or FAIL.
 
 ## Validation Report Format
 
-Write to `docs/context/validation-report.md`:
+Append to `docs/context/validation-report.md` under a new run header:
 
 ```markdown
-# Story Validation Report
+---
 
-**Date:** YYYY-MM-DD
+## Validation Run — [ISO timestamp]
+
 **Validated by:** story-validator skill
 **Scope:** [story.E.S | sprint-N | all]
 
