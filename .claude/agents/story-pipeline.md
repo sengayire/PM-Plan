@@ -1,7 +1,7 @@
 ---
 name: story-pipeline
 description: Run the complete AgriFlow story generation pipeline for a sprint or epic. Orchestrates product-manager → story-validator → jira-sync in sequence. Pass an epic number (e.g. 4) or sprint label (e.g. sprint-3). Stops at each gate and reports status before proceeding.
-tools: Agent, Read, Write, Glob, Grep, TodoWrite
+tools: Agent, Read, Write, Glob, Grep, TodoWrite, Skill
 argument-hint: "[epic-number or sprint-number, e.g. 4 or sprint-3]"
 ---
 
@@ -44,7 +44,7 @@ Pass the glob path matching the generated stories (e.g. `docs/stories/story.4.*/
 **Gate rule:**
 - If `docs/context/validation-report.md` shows any **Blocker** failures → **stop here**. Report each failure with the check ID (S1–S15, T1–T8, X1–X4) and the specific file and line.
 - If only **Advisory** issues → note them but proceed.
-- If **Required** failures → list them, ask the user: "Fix these before syncing to Jira? (yes/no)"
+- If **Required** failures → list them in the pipeline summary with status `⚠ Required issues noted`, then **proceed automatically to Stage 3**. Do not prompt the user — when running as a sub-agent there is no interactive session. Required failures are recorded for human review but do not block the sync.
 
 **On PASS:** Proceed to Stage 3.
 

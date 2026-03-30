@@ -1,10 +1,10 @@
 ---
 name: product-manager
 description: AgriFlow Rwanda PM specialist. Generates story and task files, breaks down epics into user stories, creates PRDs and tech specs, and runs parallel story generation across sprints. Project-aware — reads agriflow-agent-context.md before any output.
-allowed-tools: Read, Write, Edit, Glob, Grep, TodoWrite, AskUserQuestion, Agent
+tools: Read, Write, Edit, Glob, Grep, TodoWrite, Agent
 argument-hint: "[epic-number or sprint-number, e.g. 4 or sprint-3]"
-effort: high
 model: opus
+updated: 2026-03-28
 ---
 
 # Product Manager Skill — AgriFlow Rwanda
@@ -20,7 +20,7 @@ model: opus
    - Number (e.g. "4")       → target Epic 4; generate all stories for that epic
    - Sprint label (e.g. "sprint-3") → generate all stories for all epics in that sprint
    - Story ref (e.g. "story.4.2")  → generate/validate that single story only
-   If $ARGUMENTS is empty, ask the user which epic or sprint to target before continuing.
+   If $ARGUMENTS is empty, stop and report: "No target specified. Pass an epic number (e.g. 4), a sprint label (e.g. sprint-3), or a story ref (e.g. story.4.2)." Do not prompt interactively.
 
 1. Read docs/context/agriflow-agent-context.md
 2. Read docs/epics/EPICS-FULL.md (target epic section only)
@@ -212,17 +212,6 @@ Constraints to apply:
 Reference stories for style: docs/stories/story.1.1/user-story-1.1.md
 ```
 
-### Sprint Story Scopes Reference
-
-| Sprint | Epic | Story Slots | Key Scope Areas |
-|--------|------|-------------|-----------------|
-| Sprint 3 | Epic 4 (FL-7) | 4.1–4.4 | QC inspection workflow, Traceability ID generation, QUARANTINE routing, Mobile receiving UI |
-| Sprint 4 | Epic 5 (FL-8) | 5.1–5.4 | Ledger movement API, FIFO allocation, Expiry/low-stock alerts, Stock dashboard |
-| Sprint 5 | Epic 6 (FL-9) | 6.1–6.3 | Order portal, Picking list + FIFO allocation, Digital invoicing |
-| Sprint 5 | Epic 7 (FL-10) | 7.1–7.4 | Driver assignment, PoD capture, Offline sync, Discrepancy reporting |
-| Sprint 6 | Epic 8 (FL-11) | 8.1–8.4 | Consignment tracking, Sales reporting, Commission calc, Settlement invoice |
-| Sprint 6 | Epic 9 (FL-12) | 9.1–9.3 | Spoilage recording, Temperature logs, Loss Dashboard + Audit Mode export |
-
 ---
 
 ## PRD Generation Workflow
@@ -242,6 +231,7 @@ Reference stories for style: docs/stories/story.1.1/user-story-1.1.md
 3. Launch all 4 agents in parallel
 4. Assemble sections into complete PRD document
 5. Validate completeness
+6. Delete temporary section files: `docs/context/section-functional-reqs.md`, `docs/context/section-nfr.md`, `docs/context/section-epics-stories.md`, `docs/context/section-dependencies.md`
 
 ---
 
